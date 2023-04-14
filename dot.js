@@ -70,6 +70,7 @@ function drawLine (toDot) {
     data.ctx.closePath();
 }
 
+//Reset selection,
 function reset() {
     console.log("reset")
     data.clickedDot = null;
@@ -98,10 +99,9 @@ function checkForDot (e) {
             drawLine(col, index);
             //reset(); //change this if you really want continoous clicking
             console.log(data.clickedIndex)
-        } else {
-            data.clickedDot = col;
-            data.clickedIndex = index;
         }
+        data.clickedDot = col;
+        data.clickedIndex = index;
 
     } else {
         reset();
