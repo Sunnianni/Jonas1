@@ -2,7 +2,10 @@ var data = {
     canvas: null,
     ctx: null,
     clickedDot: null,
-    dots: [{x: 250, y: 300}, {x: 350, y: 400}, {x: 500, y: 200}, {x: 1000, y: 550}, {x: 400, y: 600}, {x: 600, y: 300}]
+    clickedIndex : 0,
+    dots: [{x: 250, y: 300}, {x: 350, y: 400}, {x: 500, y: 200}, {x: 1000, y: 550}, {x: 400, y: 600}, {x: 600, y: 300}],
+    dotOrder: [0,1,2,3,4,5],
+    dotIndex: 0
 };
 
 function circleCollision (c1, c2) {
@@ -43,6 +46,20 @@ function drawDots () {
         data.ctx.closePath();
     }
 }
+
+function isValidConnection(dot1, dot2) {
+    //If we already have connected all the dots we cant continue
+    if(data.dotIndex >= data.dotOrder.length) {
+        return false;
+    }
+    //Are the two dots equivalent to the dot currently in order and the next dot in order respectively?
+    if(data.dotOrder[data.dotIndex] == dot1 && data.dotOrder[data.dotIndex + 1] == dot2) {
+        return true;
+    }
+    //If not, return false
+    return false
+}
+
 function drawLine (toDot) {
     data.ctx.beginPath();
     data.ctx.moveTo(data.clickedDot.x, data.clickedDot.y);
@@ -53,18 +70,42 @@ function drawLine (toDot) {
     data.ctx.closePath();
 }
 
+function reset() {
+    console.log("reset")
+    data.clickedDot = null;
+    data.clickedIndex = null;
+}
+
 function checkForDot (e) {
-    var i = 0, col = null;
+    var i = 0, col = null, index = 0;
     for (; i < data.dots.length; i++) {
         var d = data.dots[i],
             c1 = {x: d.x, y: d.y, r: 10},
             c2 = {x: e.pageX, y: e.pageY, r: 10};
-        if (circleCollision(c1, c2)) col = d;
+            index = i
+        if (circleCollision(c1, c2)) {
+            col = d;
+            index = i;
+            //You actually can stop after you have found the first dot index! ^^
+            break;
+        } 
     }
     if (col !== null) {
-        if (data.clickedDot !== null) drawLine(col);
-        data.clickedDot = col;
-    } else data.clickedDot = null;
+        if (data.clickedDot !== null && isValidConnection(data.clickedIndex, index)) {
+            //After we have successfully found a valid line combination we can increment the dot-index (so the index inside our current order)
+            data.dotIndex = data.dotIndex + 1;
+            console.log("success, incrementing clicked index to " + data.clickedIndex)
+            drawLine(col, index);
+            //reset(); //change this if you really want continoous clicking
+            console.log(data.clickedIndex)
+        } else {
+            data.clickedDot = col;
+            data.clickedIndex = index;
+        }
+
+    } else {
+        reset();
+    }
 }
 
 prepCanvas();
